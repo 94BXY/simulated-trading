@@ -116,6 +116,19 @@ h2 { font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; g
 .section-body { overflow: hidden; transition: max-height 0.35s ease, opacity 0.25s ease; }
 .section-body.collapsed { max-height: 0 !important; opacity: 0; }
 
+
+/* 选股统计饼图 */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.stats-card { background: var(--card); border-radius: var(--radius); padding: 20px; border: 1px solid var(--border); }
+.stats-card h3 { font-size: 15px; margin-bottom: 12px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.pie-container { display: flex; gap: 20px; flex-wrap: wrap; }
+.pie-item { flex: 1; min-width: 200px; text-align: center; }
+.pie-item h4 { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+.pie-wrapper { position: relative; height: 180px; }
+.pie-legend { display: flex; justify-content: center; gap: 16px; margin-top: 8px; font-size: 12px; }
+.pie-legend-item { display: flex; align-items: center; gap: 4px; }
+.pie-legend-color { width: 10px; height: 10px; border-radius: 50%; }
+
 </style>
 </head>
 <body>
@@ -148,6 +161,40 @@ h2 { font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; g
   </div>
   <div class="chart-wrapper"><canvas id="returnChart"></canvas></div>
 </div>
+
+<div class="stats-grid">
+  <div class="stats-card">
+    <h3>📊 选股成功失败百分比</h3>
+    <div class="pie-container">
+      <div class="pie-item">
+        <h4>当日推荐</h4>
+        <div class="pie-wrapper"><canvas id="pieCountToday"></canvas></div>
+        <div class="pie-legend" id="legendCountToday"></div>
+      </div>
+      <div class="pie-item">
+        <h4>总体持仓</h4>
+        <div class="pie-wrapper"><canvas id="pieCountAll"></canvas></div>
+        <div class="pie-legend" id="legendCountAll"></div>
+      </div>
+    </div>
+  </div>
+  <div class="stats-card">
+    <h3>📈 选股收益与亏损百分比</h3>
+    <div class="pie-container">
+      <div class="pie-item">
+        <h4>当日推荐平均收益率</h4>
+        <div class="pie-wrapper"><canvas id="pieReturnToday"></canvas></div>
+        <div class="pie-legend" id="legendReturnToday"></div>
+      </div>
+      <div class="pie-item">
+        <h4>总体持仓平均收益率</h4>
+        <div class="pie-wrapper"><canvas id="pieReturnAll"></canvas></div>
+        <div class="pie-legend" id="legendReturnAll"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="groupsContainer"></div>
 <div class="toast" id="toast"></div>
 
@@ -302,7 +349,105 @@ function toggleSection(sectionId) {
   }
 }
 
-function renderAll() { renderRepeatStats(DATA.repeat_stats); renderRanking('all'); populateChartFilter(); renderChart(); renderGroups(); }
+
+// ===== 选股统计饼图 =====
+let pieCharts = {};
+
+function destroyPieCharts() {
+  Object.values(pieCharts).forEach(c => { if (c) c.destroy(); });
+  pieCharts = {};
+}
+
+function getStockPnl(stock) {
+  if (!stock.daily_prices.length || !stock.buy_price) return null;
+  const latest = stock.daily_prices[stock.daily_prices.length - 1].close;
+  return ((latest - stock.buy_price) / stock.buy_price * 100);
+}
+
+function renderPieChart(canvasId, legendId, positive, negative, positiveLabel, negativeLabel, isReturn) {
+  const canvas = document.getElementById(canvasId);
+  const legend = document.getElementById(legendId);
+  const total = positive + negative;
+  if (total === 0) {
+    canvas.parentElement.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim)">暂无数据</div>';
+    legend.innerHTML = '';
+    return;
+  }
+  const posPercent = (positive / total * 100).toFixed(1);
+  const negPercent = (negative / total * 100).toFixed(1);
+  const ctx = canvas.getContext('2d');
+  pieCharts[canvasId] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: [positiveLabel, negativeLabel],
+      datasets: [{
+        data: [positive, negative],
+        backgroundColor: ['rgba(255, 23, 68, 0.8)', 'rgba(0, 200, 83, 0.8)'],
+        borderColor: ['rgba(255, 23, 68, 1)', 'rgba(0, 200, 83, 1)'],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '50%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const value = context.raw;
+              const percent = (value / total * 100).toFixed(1);
+              if (isReturn) return context.label + ': ' + value.toFixed(2) + '% (' + percent + '%)';
+              return context.label + ': ' + value + '只 (' + percent + '%)';
+            }
+          }
+        }
+      }
+    }
+  });
+  legend.innerHTML = '<div class="pie-legend-item"><div class="pie-legend-color" style="background:rgba(255,23,68,0.8)"></div><span>' + positiveLabel + ': ' + (isReturn ? positive.toFixed(2) + '%' : positive + '只') + ' (' + posPercent + '%)</span></div><div class="pie-legend-item"><div class="pie-legend-color" style="background:rgba(0,200,83,0.8)"></div><span>' + negativeLabel + ': ' + (isReturn ? negative.toFixed(2) + '%' : negative + '只') + ' (' + negPercent + '%)</span></div>';
+}
+
+function renderStatsCharts() {
+  destroyPieCharts();
+  const now = new Date();
+  const today = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  const todayStocks = [];
+  const allStocks = [];
+  const seen = new Set();
+  DATA.groups.forEach(g => {
+    g.stocks.forEach(s => {
+      if (s.buy_status !== 'success') return;
+      if (s.first_recommend_date === today) todayStocks.push(s);
+      if (!seen.has(s.code)) { seen.add(s.code); allStocks.push(s); }
+    });
+  });
+  // 选股个数占比 - 当日
+  const tPos = todayStocks.filter(s => getStockPnl(s) > 0).length;
+  const tNeg = todayStocks.filter(s => getStockPnl(s) < 0).length;
+  renderPieChart('pieCountToday', 'legendCountToday', tPos, tNeg, '获利', '亏损', false);
+  // 选股个数占比 - 总体
+  const aPos = allStocks.filter(s => getStockPnl(s) > 0).length;
+  const aNeg = allStocks.filter(s => getStockPnl(s) < 0).length;
+  renderPieChart('pieCountAll', 'legendCountAll', aPos, aNeg, '获利', '亏损', false);
+  // 收益率占比 - 当日
+  const tReturns = todayStocks.map(s => getStockPnl(s)).filter(r => r !== null);
+  const tAvgRet = tReturns.filter(r => r > 0);
+  const tAvgLoss = tReturns.filter(r => r < 0);
+  const avgTRet = tAvgRet.length > 0 ? tAvgRet.reduce((a,b) => a+b, 0) / tAvgRet.length : 0;
+  const avgTLoss = tAvgLoss.length > 0 ? Math.abs(tAvgLoss.reduce((a,b) => a+b, 0) / tAvgLoss.length) : 0;
+  renderPieChart('pieReturnToday', 'legendReturnToday', avgTRet, avgTLoss, '平均收益率', '平均亏损率', true);
+  // 收益率占比 - 总体
+  const aReturns = allStocks.map(s => getStockPnl(s)).filter(r => r !== null);
+  const aAvgRet = aReturns.filter(r => r > 0);
+  const aAvgLoss = aReturns.filter(r => r < 0);
+  const avgARet = aAvgRet.length > 0 ? aAvgRet.reduce((a,b) => a+b, 0) / aAvgRet.length : 0;
+  const avgALoss = aAvgLoss.length > 0 ? Math.abs(aAvgLoss.reduce((a,b) => a+b, 0) / aAvgLoss.length) : 0;
+  renderPieChart('pieReturnAll', 'legendReturnAll', avgARet, avgALoss, '平均收益率', '平均亏损率', true);
+}
+
+function renderAll() { renderRepeatStats(DATA.repeat_stats); renderRanking('all'); populateChartFilter(); renderChart(); renderGroups(); renderStatsCharts(); }
 
 const EMBEDDED_DATA = {
   "groups": [
