@@ -92,6 +92,30 @@ h2 { font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; g
 .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 24px; background: #333; color: #fff; border-radius: var(--radius); font-size: 14px; z-index: 1000; opacity: 0; transform: translateY(20px); transition: all 0.3s; pointer-events: none; }
 .toast.show { opacity: 1; transform: translateY(0); }
 .status-msg { text-align: center; padding: 40px; color: var(--text-dim); }
+
+/* 收益率排行榜 */
+.rank-section { margin-bottom: 16px; }
+.rank-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.rank-tab { padding: 8px 16px; background: var(--border); border: none; border-radius: var(--radius); color: var(--text-dim); cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.rank-tab.active { background: var(--blue); color: #fff; }
+.rank-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.rank-table th, .rank-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.rank-table th { color: var(--text-dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.rank-table tr:hover td { background: var(--card-hover); }
+.rank-pos { font-weight: 700; width: 30px; }
+.rank-pos.top1 { color: #ffd700; }
+.rank-pos.top2 { color: #c0c0c0; }
+.rank-pos.top3 { color: #cd7f32; }
+.rank-pnl { font-weight: 700; }
+.rank-pnl.positive { color: var(--green); }
+.rank-pnl.negative { color: var(--red); }
+
+/* 折叠按钮 */
+.section-toggle { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 13px; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; }
+.section-toggle:hover { background: var(--border); color: var(--text); }
+.section-body { overflow: hidden; transition: max-height 0.35s ease, opacity 0.25s ease; }
+.section-body.collapsed { max-height: 0 !important; opacity: 0; }
+
 </style>
 </head>
 <body>
@@ -102,9 +126,21 @@ h2 { font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; g
   <button class="btn" style="background:#2a3a5a" onclick="handleExport()">💾 导出数据</button>
 </div>
 <div class="card" id="repeatSection" style="display:none">
-  <h2>📊 重复推荐排行榜</h2>
-  <table class="repeat-table"><thead><tr><th>股票名称</th><th>代码</th><th>推荐次数</th><th>首次推荐</th><th>最近推荐</th></tr></thead><tbody id="repeatBody"></tbody></table>
+  <h2>📊 重复推荐排行榜 <button class="section-toggle" onclick="toggleSection('repeatSection')">收起</button></h2>
+  <div class="section-body" id="repeatBody">
+    <table class="repeat-table"><thead><tr><th>股票名称</th><th>代码</th><th>推荐次数</th><th>首次推荐</th><th>最近推荐</th></tr></thead><tbody id="repeatTableBody"></tbody></table>
+  </div>
 </div>
+
+<div class="card rank-section" id="rankSection">
+  <h2>🏆 收益率排行榜</h2>
+  <div class="rank-tabs">
+    <button class="rank-tab active" onclick="switchRankTab('all', this)">至今最高</button>
+    <button class="rank-tab" onclick="switchRankTab('3d', this)">三日最高</button>
+  </div>
+  <div id="rankBody"></div>
+</div>
+
 <div class="card">
   <div class="chart-header">
     <h2>📈 收益率走势</h2>
@@ -128,7 +164,7 @@ function calcPnl(stock) { if (!stock.daily_prices.length || !stock.buy_price) re
 function computeRepeatStats(groups) { const map = {}; groups.forEach(g => { g.stocks.forEach(s => { if (!map[s.code]) map[s.code] = { code: s.code, name: s.name, recommend_count: 0, first_date: '', last_date: '' }; const stat = map[s.code]; stat.recommend_count = Math.max(stat.recommend_count, s.recommend_count); const dates = s.recommend_dates.sort(); stat.first_date = dates[0]; stat.last_date = dates[dates.length - 1]; }); }); return Object.values(map).filter(s => s.recommend_count >= 2).sort((a, b) => b.recommend_count - a.recommend_count); }
 function getAllSuccessStocks(groups) { const seen = new Map(); groups.forEach(g => { g.stocks.forEach(s => { if (s.buy_status === 'success' && !seen.has(s.code)) seen.set(s.code, s); }); }); return [...seen.values()]; }
 
-function renderRepeatStats(stats) { const section = document.getElementById('repeatSection'); const body = document.getElementById('repeatBody'); if (!stats.length) { section.style.display = 'none'; return; } section.style.display = ''; body.innerHTML = stats.map(s => `<tr><td><span style="color:var(--amber)">🔁</span> ${s.name}</td><td style="color:var(--text-dim)">${s.code}</td><td><span class="badge badge-repeat">${s.recommend_count}次</span></td><td style="color:var(--text-dim)">${formatDate(s.first_date)}</td><td style="color:var(--text-dim)">${formatDate(s.last_date)}</td></tr>`).join(''); }
+function renderRepeatStats(stats) { const section = document.getElementById('repeatSection'); const body = document.getElementById('repeatTableBody'); if (!stats.length) { section.style.display = 'none'; return; } section.style.display = ''; body.innerHTML = stats.map(s => `<tr><td><span style="color:var(--amber)">🔁</span> ${s.name}</td><td style="color:var(--text-dim)">${s.code}</td><td><span class="badge badge-repeat">${s.recommend_count}次</span></td><td style="color:var(--text-dim)">${formatDate(s.first_date)}</td><td style="color:var(--text-dim)">${formatDate(s.last_date)}</td></tr>`).join(''); }
 
 function highlightDataset(chart, idx) { chart.data.datasets.forEach((ds, i) => { if (!ds._origColor) ds._origColor = ds.borderColor; if (i === idx) { ds.borderColor = ds._origColor; ds.borderWidth = 3; ds.pointRadius = 6; } else { ds.borderColor = ds._origColor + '18'; ds.pointRadius = 0; } }); chart.update('none'); }
 function resetHighlight(chart) { chart.data.datasets.forEach(ds => { if (ds._origColor) { ds.borderColor = ds._origColor; delete ds._origColor; } ds.borderWidth = 2; ds.pointRadius = 4; }); chart.update('none'); }
@@ -201,7 +237,72 @@ function deleteStock(code) { const stock = DATA.groups.flatMap(g => g.stocks).fi
 function handleAddStock() { const input = document.getElementById('addStockInput'); const val = input.value.trim(); if (!val) { toast('请输入股票代码或名称'); return; } const today = new Date(); const dateStr = today.toISOString().slice(0,10); const groupId = 'group_' + dateStr.replace(/-/g,''); let group = DATA.groups.find(g => g.id === groupId); if (!group) { group = { id: groupId, label: `${today.getMonth()+1}月${today.getDate()}日 推荐组`, date: dateStr, stocks: [] }; DATA.groups.unshift(group); } const code = val.replace(/\D/g,'').slice(0,6); const existing = DATA.groups.flatMap(g => g.stocks).find(s => s.code === code); if (existing) { if (!existing.recommend_dates.includes(dateStr)) { existing.recommend_dates.push(dateStr); existing.recommend_count++; } if (!group.stocks.find(s => s.code === code)) group.stocks.push(existing); toast(`${existing.name} 重复推荐(第${existing.recommend_count}次)`); } else { const newStock = { code, name: val.length > 6 ? val : `股票${code}`, first_recommend_date: dateStr, recommend_dates: [dateStr], recommend_count: 1, buy_status: 'success', buy_price: 0, daily_prices: [] }; group.stocks.unshift(newStock); toast(`已添加 ${newStock.name}`); } DATA.repeat_stats = computeRepeatStats(DATA.groups); input.value = ''; renderAll(); downloadJson(); }
 function downloadJson() { const blob = new Blob([JSON.stringify(DATA, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'data.json'; a.click(); URL.revokeObjectURL(url); }
 function handleExport() { downloadJson(); toast('data.json 已下载'); }
-function renderAll() { renderRepeatStats(DATA.repeat_stats); populateChartFilter(); renderChart(); renderGroups(); }
+
+function calcPnl3d(stock) {
+  if (!stock.daily_prices.length || !stock.buy_price) return null;
+  const prices = stock.daily_prices;
+  if (prices.length < 2) return null;
+  const recent = prices.slice(-3);
+  const maxClose = Math.max(...recent.map(p => p.close));
+  return ((maxClose - stock.buy_price) / stock.buy_price * 100);
+}
+
+function renderRanking(mode) {
+  const stocks = getAllSuccessStocks(DATA.groups);
+  const ranked = stocks.map(s => ({
+    ...s,
+    pnl: mode === 'all' ? calcPnl(s) : calcPnl3d(s)
+  })).filter(s => s.pnl !== null).sort((a, b) => b.pnl - a.pnl).slice(0, 10);
+  
+  const body = document.getElementById('rankBody');
+  if (!ranked.length) {
+    body.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-dim)">暂无数据</div>';
+    return;
+  }
+  
+  body.innerHTML = `
+    <table class="rank-table">
+      <thead><tr><th>排名</th><th>股票名称</th><th>代码</th><th>买入价</th><th>最新价</th><th>收益率</th></tr></thead>
+      <tbody>
+        ${ranked.map((s, i) => {
+          const latest = s.daily_prices[s.daily_prices.length - 1];
+          const posClass = i < 3 ? 'top' + (i + 1) : '';
+          const pnlClass = s.pnl >= 0 ? 'positive' : 'negative';
+          return `<tr>
+            <td class="rank-pos ${posClass}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)}</td>
+            <td>${s.name}</td>
+            <td style="color:var(--text-dim)">${s.code}</td>
+            <td style="color:var(--text-dim)">${s.buy_price}</td>
+            <td style="color:var(--text-dim)">${latest ? latest.close : '--'}</td>
+            <td class="rank-pnl ${pnlClass}">${s.pnl >= 0 ? '+' : ''}${s.pnl.toFixed(2)}%</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function switchRankTab(mode, btn) {
+  document.querySelectorAll('.rank-tab').forEach(tab => tab.classList.remove('active'));
+  btn.classList.add('active');
+  renderRanking(mode);
+}
+
+function toggleSection(sectionId) {
+  const section = document.getElementById(sectionId);
+  const body = section.querySelector('.section-body');
+  const toggle = section.querySelector('.section-toggle');
+  if (body.classList.contains('collapsed')) {
+    body.classList.remove('collapsed');
+    body.style.maxHeight = body.scrollHeight + 'px';
+    toggle.textContent = '收起';
+  } else {
+    body.classList.add('collapsed');
+    toggle.textContent = '展开';
+  }
+}
+
+function renderAll() { renderRepeatStats(DATA.repeat_stats); renderRanking('all'); populateChartFilter(); renderChart(); renderGroups(); }
 
 const EMBEDDED_DATA = {
   "groups": [
