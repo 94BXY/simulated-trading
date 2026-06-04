@@ -452,6 +452,107 @@ function renderAll() { renderRepeatStats(DATA.repeat_stats); renderRanking('all'
 const EMBEDDED_DATA = {
   "groups": [
     {
+      "id": "group_20260605",
+      "label": "6月5日 第六组",
+      "date": "2026-06-05",
+      "stocks": [
+        {
+          "code": "001896",
+          "name": "豫能控股",
+          "first_recommend_date": "2026-06-05",
+          "recommend_dates": [
+            "2026-06-05"
+          ],
+          "recommend_count": 1,
+          "buy_status": "success",
+          "buy_price": null,
+          "daily_prices": []
+        },
+        {
+          "code": "600703",
+          "name": "三安光电",
+          "first_recommend_date": "2026-06-05",
+          "recommend_dates": [
+            "2026-06-05"
+          ],
+          "recommend_count": 1,
+          "buy_status": "success",
+          "buy_price": null,
+          "daily_prices": []
+        },
+        {
+          "code": "002463",
+          "name": "沪电股份",
+          "first_recommend_date": "2026-06-05",
+          "recommend_dates": [
+            "2026-06-05"
+          ],
+          "recommend_count": 1,
+          "buy_status": "success",
+          "buy_price": null,
+          "daily_prices": []
+        },
+        {
+          "code": "002859",
+          "name": "洁美科技",
+          "first_recommend_date": "2026-06-04",
+          "recommend_dates": [
+            "2026-06-04",
+            "2026-06-05"
+          ],
+          "recommend_count": 2,
+          "buy_status": "success",
+          "buy_price": 89.63,
+          "daily_prices": [
+            {
+              "date": "2026-06-04",
+              "close": 93.77
+            }
+          ]
+        },
+        {
+          "code": "603256",
+          "name": "宏和科技",
+          "first_recommend_date": "2026-05-30",
+          "recommend_dates": [
+            "2026-05-30",
+            "2026-06-02",
+            "2026-06-04",
+            "2026-06-05"
+          ],
+          "recommend_count": 4,
+          "buy_status": "success",
+          "buy_price": 181.94,
+          "daily_prices": [
+            {
+              "date": "2026-05-29",
+              "close": 181.94
+            },
+            {
+              "date": "2026-06-01",
+              "close": 181.94
+            },
+            {
+              "date": "2026-06-02",
+              "close": 198.8,
+              "open": 181.94,
+              "high": 191.1,
+              "low": 181.94,
+              "volume": 5596500
+            },
+            {
+              "date": "2026-06-03",
+              "close": 202.7
+            },
+            {
+              "date": "2026-06-04",
+              "close": 194.46
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "group_20260530",
       "label": "5月30日 推荐组",
       "date": "2026-05-30",
@@ -657,9 +758,11 @@ const EMBEDDED_DATA = {
           "first_recommend_date": "2026-05-30",
           "recommend_dates": [
             "2026-05-30",
-            "2026-06-02"
+            "2026-06-02",
+            "2026-06-04",
+            "2026-06-05"
           ],
-          "recommend_count": 2,
+          "recommend_count": 4,
           "buy_status": "success",
           "buy_price": 181.94,
           "daily_prices": [
@@ -1702,9 +1805,10 @@ const EMBEDDED_DATA = {
           "name": "洁美科技",
           "first_recommend_date": "2026-06-04",
           "recommend_dates": [
-            "2026-06-04"
+            "2026-06-04",
+            "2026-06-05"
           ],
-          "recommend_count": 1,
+          "recommend_count": 2,
           "buy_status": "success",
           "buy_price": 89.63,
           "daily_prices": [
@@ -1768,11 +1872,65 @@ const EMBEDDED_DATA = {
             }
           ],
           "buy_time": "2026-06-04 09:35"
+        },
+        {
+          "code": "603256",
+          "name": "宏和科技",
+          "first_recommend_date": "2026-05-30",
+          "recommend_dates": [
+            "2026-05-30",
+            "2026-06-02",
+            "2026-06-04"
+          ],
+          "recommend_count": 3,
+          "buy_status": "success",
+          "buy_price": 181.94,
+          "daily_prices": [
+            {
+              "date": "2026-05-29",
+              "close": 181.94
+            },
+            {
+              "date": "2026-06-01",
+              "close": 181.94
+            },
+            {
+              "date": "2026-06-02",
+              "close": 198.8,
+              "open": 181.94,
+              "high": 191.1,
+              "low": 181.94,
+              "volume": 5596500
+            },
+            {
+              "date": "2026-06-03",
+              "close": 202.7
+            },
+            {
+              "date": "2026-06-04",
+              "close": 194.46
+            }
+          ],
+          "buy_time": "2026-05-30 09:35"
         }
       ]
     }
   ],
   "repeat_stats": [
+    {
+      "code": "603256",
+      "name": "宏和科技",
+      "recommend_count": 4,
+      "first_date": "2026-05-30",
+      "last_date": "2026-06-04"
+    },
+    {
+      "code": "002859",
+      "name": "洁美科技",
+      "recommend_count": 2,
+      "first_date": "2026-06-04",
+      "last_date": "2026-06-05"
+    },
     {
       "code": "601991",
       "name": "大唐发电",
@@ -1804,13 +1962,6 @@ const EMBEDDED_DATA = {
     {
       "code": "688035",
       "name": "XD德邦科",
-      "recommend_count": 2,
-      "first_date": "2026-05-30",
-      "last_date": "2026-06-02"
-    },
-    {
-      "code": "603256",
-      "name": "宏和科技",
       "recommend_count": 2,
       "first_date": "2026-05-30",
       "last_date": "2026-06-02"
