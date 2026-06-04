@@ -258,12 +258,22 @@ function renderChart() {
   });
 }
 
-function populateChartFilter() { const sel = document.getElementById('chartFilter'); sel.innerHTML = '<option value="all">全部持仓</option>'; DATA.groups.forEach(g => { const opt = document.createElement('option'); opt.value = g.id; opt.textContent = g.label; sel.appendChild(opt); }); }
+function populateChartFilter() { const sel = document.getElementById('chartFilter'); sel.innerHTML = '<option value="all">全部持仓</option>'; [...DATA.groups].sort((a,b) => b.date.localeCompare(a.date)).forEach(g => { const opt = document.createElement('option'); opt.value = g.id; opt.textContent = g.label; sel.appendChild(opt); }); }
 
 function renderGroups() {
   const container = document.getElementById('groupsContainer');
   if (!DATA.groups.length) { container.innerHTML = '<div class="card empty"><div class="empty-icon">📭</div>暂无推荐组</div>'; return; }
-  container.innerHTML = DATA.groups.map(group => {
+  const sortedGroups = [...DATA.groups].sort((a, b) => b.date.localeCompare(a.date));
+  container.innerHTML = sortedGroups.map(group => {
+    group.stocks = [...group.stocks].sort((a, b) => {
+      const pnlA = calcPnl(a), pnlB = calcPnl(b);
+      if (a.buy_status === 'failed_limit_up' && b.buy_status !== 'failed_limit_up') return 1;
+      if (b.buy_status === 'failed_limit_up' && a.buy_status !== 'failed_limit_up') return -1;
+      if (pnlA === null && pnlB !== null) return 1;
+      if (pnlB === null && pnlA !== null) return -1;
+      if (pnlA === null && pnlB === null) return 0;
+      return pnlB - pnlA;
+    });
     const newStocks = group.stocks.filter(s => s.first_recommend_date === group.date);
     const repeatStocks = group.stocks.filter(s => s.first_recommend_date !== group.date);
     const stocksHtml = group.stocks.map(s => {
