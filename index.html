@@ -116,6 +116,44 @@ h2 { font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; g
 .section-body { overflow: hidden; transition: max-height 0.35s ease, opacity 0.25s ease; }
 .section-body.collapsed { max-height: 0 !important; opacity: 0; }
 
+/* 分析师推荐 */
+.advisor-section { margin-bottom: 20px; }
+.advisor-card { background: linear-gradient(135deg, #1a2744 0%, #16213e 100%); border: 1px solid #2a4a7a; border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+.advisor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.advisor-title { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.advisor-date { color: var(--text-dim); font-size: 13px; }
+.advisor-picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.pick-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; position: relative; overflow: hidden; }
+.pick-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.pick-card.buy::before { background: var(--green); }
+.pick-card.hold::before { background: var(--amber); }
+.pick-card.avoid::before { background: var(--red); }
+.pick-rank { position: absolute; top: 12px; right: 14px; font-size: 32px; font-weight: 900; opacity: 0.12; }
+.pick-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.pick-name { font-size: 16px; font-weight: 700; }
+.pick-code { color: var(--text-dim); font-size: 13px; }
+.pick-tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+.pick-tag.buy { background: rgba(0,200,83,0.15); color: var(--green); }
+.pick-tag.hold { background: rgba(255,171,0,0.15); color: var(--amber); }
+.pick-tag.avoid { background: rgba(255,23,68,0.15); color: var(--red); }
+.pick-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.pick-metric { text-align: center; }
+.pick-metric-val { font-size: 16px; font-weight: 700; }
+.pick-metric-label { font-size: 11px; color: var(--text-dim); }
+.pick-analysis { font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-bottom: 14px; }
+.pick-points { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.pick-point { text-align: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; }
+.pick-point-label { font-size: 11px; color: var(--text-dim); margin-bottom: 2px; }
+.pick-point-val { font-size: 14px; font-weight: 700; }
+.pick-point-val.buy-pt { color: var(--blue); }
+.pick-point-val.sell-pt { color: var(--green); }
+.pick-point-val.stop-pt { color: var(--red); }
+.advisor-summary { font-size: 13px; color: var(--text-dim); line-height: 1.8; padding: 16px; background: rgba(0,0,0,0.15); border-radius: var(--radius); border-left: 3px solid var(--blue); }
+.advisor-summary strong { color: var(--text); }
+.advisor-evolution { margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.15); border-radius: var(--radius); }
+.advisor-evolution h4 { font-size: 14px; margin-bottom: 10px; color: var(--amber); }
+.evo-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; }
+.evo-icon { width: 20px; text-align: center; }
 
 /* 选股统计饼图 */
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
@@ -138,6 +176,10 @@ h2 { font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; g
   <button class="btn" onclick="handleAddStock()">＋ 添加推荐</button>
   <button class="btn" style="background:#2a3a5a" onclick="handleExport()">💾 导出数据</button>
 </div>
+
+<!-- 分析师推荐 -->
+<div class="advisor-section" id="advisorSection"></div>
+
 <div class="card" id="repeatSection" style="display:none">
   <h2>📊 重复推荐排行榜 <button class="section-toggle" onclick="toggleSection('repeatSection')">收起</button></h2>
   <div class="section-body" id="repeatBody">
@@ -457,7 +499,7 @@ function renderStatsCharts() {
   renderPieChart('pieReturnAll', 'legendReturnAll', avgARet, avgALoss, '平均收益率', '平均亏损率', true);
 }
 
-function renderAll() { renderRepeatStats(DATA.repeat_stats); renderRanking('all'); populateChartFilter(); renderChart(); renderGroups(); renderStatsCharts(); }
+function renderAll() { renderAdvisor(); renderRepeatStats(DATA.repeat_stats); renderRanking('all'); populateChartFilter(); renderChart(); renderGroups(); renderStatsCharts(); }
 
 const EMBEDDED_DATA = {
   "groups": [
@@ -2691,7 +2733,101 @@ const EMBEDDED_DATA = {
   ]
 };
 
-function init() { try { DATA = EMBEDDED_DATA; if (!DATA.groups) throw new Error('数据格式错误'); renderAll(); } catch (e) { document.getElementById('groupsContainer').innerHTML = `<div class="card status-msg">⚠️ 数据加载失败: ${e.message}</div>`; } }
+// ── 分析师推荐 ──
+const ADVISOR_DATA = {
+  date: '2026-06-09',
+  picks: [
+    {
+      code: '002463', name: '沪电股份', sector: 'PCB龙头',
+      type: 'buy', rank: 1,
+      price: 137.12, change: 0.09,
+      ma5: 135.59, ma10: 132.49, ma20: 121.58,
+      volRatio: 0.80, chg5: 4.67,
+      analysis: '均线多头排列(MA5>MA10>MA20)，价格站稳MA5上方，趋势健康。PCB板块受益于AI服务器/数据中心持续扩张，公司作为国内PCB龙头订单饱满。5日涨幅+4.67%属温和上涨，非追高风险。量比0.80缩量整理，蓄势待发。',
+      buyPt: '135.0', sellPt: '148.0', stopPt: '128.0',
+      buyReason: 'MA5附近(135)低吸，回踩不破MA10确认支撑',
+      sellReason: '前高148附近减仓，突破可看155',
+      stopReason: '跌破MA20(121)止损，亏损约-5.8%'
+    },
+    {
+      code: '600703', name: '三安光电', sector: 'LED/半导体',
+      type: 'buy', rank: 2,
+      price: 16.82, change: 2.25,
+      ma5: 16.55, ma10: 16.22, ma20: 16.31,
+      volRatio: 0.62, chg5: 10.95,
+      analysis: '均线刚形成多头排列，今日+2.25%温和放量突破。LED芯片龙头，Mini LED/Micro LED布局领先，第三代半导体碳化硅业务贡献增量。5日+10.95%涨幅适中，尚未进入加速段。缩量上涨说明筹码锁定良好。',
+      buyPt: '16.5', sellPt: '19.5', stopPt: '15.5',
+      buyReason: '回踩MA5(16.55)附近买入，确认均线支撑',
+      sellReason: '19.5为前期密集成交区，突破看21',
+      stopReason: '跌破15.5止损，约-7.4%'
+    },
+    {
+      code: '603256', name: '宏和科技', sector: '电子玻纤布',
+      type: 'hold', rank: 3,
+      price: 205.27, change: 8.90,
+      ma5: 196.45, ma10: 194.30, ma20: 172.11,
+      volRatio: 0.75, chg5: 3.25,
+      analysis: '推荐4次持续看好，累计收益+12.8%，趋势验证正确。均线多头排列，价格远离MA20(172)说明主升浪进行中。电子玻纤布是PCB上游核心材料，受益于AI算力基建。今日+8.9%涨幅较大，短期有回调需求，适合持有不追高。',
+      buyPt: '195.0', sellPt: '230.0', stopPt: '180.0',
+      buyReason: '回调至MA5(196)附近可加仓',
+      sellReason: '230为心理关口，分批止盈',
+      stopReason: '跌破MA10(194)减仓，破180清仓'
+    }
+  ],
+  avoid: [
+    { code: '603135', name: '中重科技', reason: '5日涨幅+39.75%过大，今日-4.54%开始回调，追高风险极高' },
+    { code: '600487', name: '亨通光电', reason: '5日涨幅+24.75%，短期获利盘丰厚，量比0.79缩量见顶信号' },
+    { code: '600072', name: '中船科技', reason: '空头排列(价格<MA5<MA10<MA20)，5日-8.57%持续下跌' },
+    { code: '002251', name: '步步高', reason: '5日-7.79%下跌趋势，量比0.58严重缩量，无资金关注' },
+    { code: '001896', name: '豫能控股', reason: '持仓亏损-20.2%，建议止损离场，电力板块短期无催化' }
+  ],
+  evolution: [
+    { icon: '🟢', text: '宏和科技 推荐4次 +12.8% — 趋势型选股验证成功，PCB产业链持续看好' },
+    { icon: '🟢', text: '金安国纪 推荐2次 +32.8% — 覆铜板龙头，推荐后持续走强' },
+    { icon: '🟢', text: '风华高科 推荐2次 +23.6% — 被动元器件，涨价周期确认' },
+    { icon: '🔴', text: '豫能控股 推荐1次 -20.2% — 电力股追高失败，板块轮动太快' },
+    { icon: '🔴', text: '利通电子 推荐1次 -24.4% — 次新股估值过高，回调剧烈' },
+    { icon: '📝', text: '规律总结：科技/PCB/新材料 > 电力/能源，趋势型 > 题材型' }
+  ]
+};
+
+function renderAdvisor() {
+  const el = document.getElementById('advisorSection');
+  if (!el || !ADVISOR_DATA) return;
+  const d = ADVISOR_DATA;
+  let html = '<div class="advisor-card">';
+  html += '<div class="advisor-header"><div class="advisor-title">🧠 AI 分析师选股推荐</div><div class="advisor-date">更新于 ' + d.date + ' · 基于技术面+基本面+历史复盘</div></div>';
+  html += '<div class="advisor-picks">';
+  d.picks.forEach(p => {
+    const pnlClass = p.change >= 0 ? 'positive' : 'negative';
+    const pnlSign = p.change >= 0 ? '+' : '';
+    const tagLabel = p.type === 'buy' ? '强烈推荐' : (p.type === 'hold' ? '持有观察' : '谨慎');
+    html += '<div class="pick-card ' + p.type + '">';
+    html += '<div class="pick-rank">#' + p.rank + '</div>';
+    html += '<div class="pick-head"><span class="pick-name">' + p.name + '</span><span class="pick-code">' + p.code + ' · ' + p.sector + '</span><span class="pick-tag ' + p.type + '">' + tagLabel + '</span></div>';
+    html += '<div class="pick-metrics"><div class="pick-metric"><div class="pick-metric-val stock-pnl ' + pnlClass + '">' + pnlSign + p.change + '%</div><div class="pick-metric-label">今日涨跌</div></div>';
+    html += '<div class="pick-metric"><div class="pick-metric-val" style="color:var(--amber)">' + p.chg5 + '%</div><div class="pick-metric-label">5日涨幅</div></div>';
+    html += '<div class="pick-metric"><div class="pick-metric-val">' + p.volRatio + '</div><div class="pick-metric-label">量比</div></div></div>';
+    html += '<div class="pick-analysis">' + p.analysis + '</div>';
+    html += '<div class="pick-points"><div class="pick-point"><div class="pick-point-label">📍 买入点</div><div class="pick-point-val buy-pt">' + p.buyPt + '</div><div style="font-size:11px;color:var(--text-dim);margin-top:4px">' + p.buyReason + '</div></div>';
+    html += '<div class="pick-point"><div class="pick-point-label">🎯 卖出点</div><div class="pick-point-val sell-pt">' + p.sellPt + '</div><div style="font-size:11px;color:var(--text-dim);margin-top:4px">' + p.sellReason + '</div></div>';
+    html += '<div class="pick-point"><div class="pick-point-label">🛑 止损点</div><div class="pick-point-val stop-pt">' + p.stopPt + '</div><div style="font-size:11px;color:var(--text-dim);margin-top:4px">' + p.stopReason + '</div></div></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  // 避免清单
+  html += '<div class="advisor-summary"><strong>⚠️ 建议回避：</strong><br>';
+  d.avoid.forEach(a => { html += '· <strong>' + a.name + '</strong>(' + a.code + ')：' + a.reason + '<br>'; });
+  html += '</div>';
+  // 进化复盘
+  html += '<div class="advisor-evolution"><h4>📈 历史推荐复盘 & 自我进化</h4>';
+  d.evolution.forEach(e => { html += '<div class="evo-item"><span class="evo-icon">' + e.icon + '</span><span>' + e.text + '</span></div>'; });
+  html += '</div>';
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function init() { try { DATA = EMBEDDED_DATA; if (!DATA.groups) throw new Error('数据格式错误'); renderAll(); } catch (e) { document.getElementById('groupsContainer').innerHTML = '<div class="card status-msg">⚠️ 数据加载失败: ' + e.message + '</div>'; } }
 init();
 </script>
 </body>
