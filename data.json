@@ -1,51 +1,46 @@
 {
   "groups": [
     {
-      "id": "group_20260610",
-      "label": "6月10日 第九组",
-      "date": "2026-06-10",
+      "id": "group_20260611",
+      "label": "6月11日 第九组",
+      "date": "2026-06-11",
       "stocks": [
         {
           "code": "002384",
           "name": "东山精密",
-          "first_recommend_date": "2026-06-10",
+          "first_recommend_date": "2026-06-11",
           "recommend_dates": [
-            "2026-06-10"
+            "2026-06-11"
           ],
           "recommend_count": 1,
-          "buy_status": "success",
-          "buy_price": 215.51,
-          "daily_prices": [
-            {
-              "date": "2026-06-10",
-              "close": 212.27
-            }
-          ]
+          "buy_status": "pending",
+          "buy_price": null,
+          "daily_prices": []
         },
         {
           "code": "002971",
           "name": "和远气体",
-          "first_recommend_date": "2026-06-10",
+          "first_recommend_date": "2026-06-11",
           "recommend_dates": [
-            "2026-06-10"
+            "2026-06-11"
           ],
           "recommend_count": 1,
-          "buy_status": "failed_limit_up",
+          "buy_status": "pending",
           "buy_price": null,
           "daily_prices": []
         },
         {
           "code": "600487",
           "name": "亨通光电",
-          "first_recommend_date": "2026-06-08",
+          "first_recommend_date": "2026-06-11",
           "recommend_dates": [
             "2026-06-08",
             "2026-06-09",
-            "2026-06-10"
+            "2026-06-11"
           ],
           "recommend_count": 3,
-          "buy_status": "success",
-          "buy_price": 94.44,
+          "buy_status": "pending",
+          "buy_price": null,
           "daily_prices": [
             {
               "date": "2026-06-08",
@@ -54,10 +49,6 @@
             {
               "date": "2026-06-09",
               "close": 103.69
-            },
-            {
-              "date": "2026-06-10",
-              "close": 106.88
             }
           ]
         }
