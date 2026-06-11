@@ -6,6 +6,18 @@
       "date": "2026-06-11",
       "stocks": [
         {
+          "code": "002428",
+          "name": "云南锗业",
+          "first_recommend_date": "2026-06-12",
+          "recommend_dates": [
+            "2026-06-11"
+          ],
+          "recommend_count": 1,
+          "buy_status": "success",
+          "buy_price": null,
+          "daily_prices": []
+        },
+        {
           "code": "002384",
           "name": "东山精密",
           "first_recommend_date": "2026-06-11",
@@ -25,7 +37,7 @@
         {
           "code": "002971",
           "name": "和远气体",
-          "first_recommend_date": "2026-06-11",
+          "first_recommend_date": "2026-06-12",
           "recommend_dates": [
             "2026-06-11"
           ],
@@ -58,6 +70,67 @@
             {
               "date": "2026-06-11",
               "close": 104.55
+            }
+          ]
+        },
+        {
+          "code": "603256",
+          "name": "宏和科技",
+          "first_recommend_date": "2026-05-30",
+          "recommend_dates": [
+            "2026-05-30",
+            "2026-06-02",
+            "2026-06-04",
+            "2026-06-05",
+            "2026-06-11"
+          ],
+          "recommend_count": 5,
+          "buy_status": "success",
+          "buy_price": 181.94,
+          "daily_prices": [
+            {
+              "date": "2026-05-29",
+              "close": 181.94
+            },
+            {
+              "date": "2026-06-01",
+              "close": 181.94
+            },
+            {
+              "date": "2026-06-02",
+              "close": 198.8,
+              "open": 181.94,
+              "high": 191.1,
+              "low": 181.94,
+              "volume": 5596500
+            },
+            {
+              "date": "2026-06-03",
+              "close": 202.7
+            },
+            {
+              "date": "2026-06-04",
+              "close": 194.46
+            },
+            {
+              "date": "2026-06-05",
+              "close": 205.06
+            },
+            {
+              "date": "2026-06-08",
+              "close": 191.28
+            },
+            {
+              "date": "2026-06-09",
+              "close": 205.27
+            },
+            {
+              "date": "2026-06-10",
+              "close": 197.85
+            },
+            {
+              "date": "2026-06-11",
+              "close": 212.9
             }
           ]
         }
@@ -403,9 +476,10 @@
             "2026-05-30",
             "2026-06-02",
             "2026-06-04",
-            "2026-06-05"
+            "2026-06-05",
+            "2026-06-11"
           ],
-          "recommend_count": 4,
+          "recommend_count": 5,
           "buy_status": "success",
           "buy_price": 181.94,
           "daily_prices": [
@@ -2625,7 +2699,7 @@
     {
       "code": "603256",
       "name": "宏和科技",
-      "recommend_count": 4,
+      "recommend_count": 5,
       "first_date": "2026-05-30",
       "last_date": "2026-06-04"
     },
