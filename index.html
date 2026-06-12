@@ -251,7 +251,7 @@ function toast(msg) { const t = document.getElementById('toast'); t.textContent 
 function formatDate(dateStr) { const d = dateStr.replace(/-/g, ''); return d.slice(4,6) + '月' + d.slice(6,8) + '日'; }
 function calcPnl(stock) { if (!stock.daily_prices.length || !stock.buy_price) return null; const latest = stock.daily_prices[stock.daily_prices.length - 1].close; return ((latest - stock.buy_price) / stock.buy_price * 100); }
 function computeRepeatStats(groups) { const map = {}; groups.forEach(g => { g.stocks.forEach(s => { if (!map[s.code]) map[s.code] = { code: s.code, name: s.name, recommend_count: 0, first_date: '', last_date: '' }; const stat = map[s.code]; stat.recommend_count = Math.max(stat.recommend_count, s.recommend_count); const dates = s.recommend_dates.sort(); stat.first_date = dates[0]; stat.last_date = dates[dates.length - 1]; }); }); return Object.values(map).filter(s => s.recommend_count >= 2).sort((a, b) => b.recommend_count - a.recommend_count); }
-function getAllSuccessStocks(groups) { const seen = new Map(); groups.forEach(g => { g.stocks.forEach(s => { if (s.buy_status === 'success' && !seen.has(s.code)) seen.set(s.code, s); }); }); return [...seen.values()]; }
+function getAllSuccessStocks(groups) { const seen = new Map(); groups.forEach(g => { g.stocks.forEach(s => { if ((s.buy_status === 'success' || s.buy_status === 'stopped') && !seen.has(s.code)) seen.set(s.code, s); }); }); return [...seen.values()]; }
 
 function renderRepeatStats(stats) { const section = document.getElementById('repeatSection'); const body = document.getElementById('repeatTableBody'); if (!stats.length) { section.style.display = 'none'; return; } section.style.display = ''; body.innerHTML = stats.map(s => `<tr><td><span style="color:var(--amber)">🔁</span> ${s.name}</td><td style="color:var(--text-dim)">${s.code}</td><td><span class="badge badge-repeat">${s.recommend_count}次</span></td><td style="color:var(--text-dim)">${formatDate(s.first_date)}</td><td style="color:var(--text-dim)">${formatDate(s.last_date)}</td></tr>`).join(''); }
 
@@ -311,6 +311,8 @@ function renderGroups() {
       const pnlA = calcPnl(a), pnlB = calcPnl(b);
       if (a.buy_status === 'failed_limit_up' && b.buy_status !== 'failed_limit_up') return 1;
       if (b.buy_status === 'failed_limit_up' && a.buy_status !== 'failed_limit_up') return -1;
+      if (a.buy_status === 'stopped' && b.buy_status !== 'stopped') return 1;
+      if (b.buy_status === 'stopped' && a.buy_status !== 'stopped') return -1;
       if (pnlA === null && pnlB !== null) return 1;
       if (pnlB === null && pnlA !== null) return -1;
       if (pnlA === null && pnlB === null) return 0;
@@ -323,6 +325,7 @@ function renderGroups() {
       const pnlStr = pnl !== null ? `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%` : '--';
       const pnlClass = pnl !== null ? (pnl >= 0 ? 'positive' : 'negative') : '';
       if (s.buy_status === 'failed_limit_up') return `<div class="stock-card"><div class="stock-info"><span class="stock-icon">🔴</span><span class="stock-name">${s.name}<span class="stock-code">${s.code}</span></span></div><div class="stock-detail"><span class="stock-fail">一字板买入失败</span><button class="btn btn-danger" onclick="deleteStock('${s.code}')" title="删除">🗑</button></div></div>`;
+      if (s.buy_status === 'stopped') { const dropPct = s.buy_price ? ((s.daily_prices.length ? s.daily_prices[s.daily_prices.length-1].close : 0) - s.buy_price) / s.buy_price * 100 : 0; return `<div class="stock-card" style="opacity:0.5"><div class="stock-info"><span class="stock-icon">🛑</span><span class="stock-name">${s.name}<span class="stock-code">${s.code}</span></span></div><div class="stock-detail"><span class="stock-fail">停止追踪 (${dropPct.toFixed(1)}%)</span><button class="btn btn-danger" onclick="deleteStock('${s.code}')" title="删除">🗑</button></div></div>`; }
       if (s.first_recommend_date !== group.date) return `<div class="stock-card"><div class="stock-info"><span class="stock-icon">🔁</span><span class="stock-name">${s.name}<span class="stock-code">${s.code}</span></span></div><div class="stock-detail"><span class="stock-repeat">重复推荐(第${s.recommend_count}次) 首次买入 ${s.buy_price}</span><button class="btn btn-danger" onclick="deleteStock('${s.code}')" title="删除">🗑</button></div></div>`;
       return `<div class="stock-card"><div class="stock-info"><span class="stock-icon">🟢</span><span class="stock-name">${s.name}<span class="stock-code">${s.code}</span></span></div><div class="stock-detail"><span class="stock-price">买入 ${s.buy_price}</span><span class="stock-pnl ${pnlClass}">盈亏 ${pnlStr}</span><button class="btn btn-danger" onclick="deleteStock('${s.code}')" title="删除">🗑</button></div></div>`;
     }).join('');
