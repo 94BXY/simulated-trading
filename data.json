@@ -1,9 +1,9 @@
 {
   "groups": [
     {
-      "id": "group_20260611",
-      "label": "6月11日 第九组",
-      "date": "2026-06-11",
+      "id": "group_20260612",
+      "label": "6月12日 第十组",
+      "date": "2026-06-12",
       "stocks": [
         {
           "code": "002428",
@@ -23,6 +23,30 @@
           ]
         },
         {
+          "code": "002971",
+          "name": "和远气体",
+          "first_recommend_date": "2026-06-12",
+          "recommend_dates": [
+            "2026-06-11"
+          ],
+          "recommend_count": 1,
+          "buy_status": "success",
+          "buy_price": 58.03,
+          "daily_prices": [
+            {
+              "date": "2026-06-12",
+              "close": 58.03
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group_20260611",
+      "label": "6月11日 第九组",
+      "date": "2026-06-11",
+      "stocks": [
+        {
           "code": "002384",
           "name": "东山精密",
           "first_recommend_date": "2026-06-11",
@@ -40,23 +64,6 @@
             {
               "date": "2026-06-12",
               "close": 218.69
-            }
-          ]
-        },
-        {
-          "code": "002971",
-          "name": "和远气体",
-          "first_recommend_date": "2026-06-12",
-          "recommend_dates": [
-            "2026-06-11"
-          ],
-          "recommend_count": 1,
-          "buy_status": "success",
-          "buy_price": 58.03,
-          "daily_prices": [
-            {
-              "date": "2026-06-12",
-              "close": 58.03
             }
           ]
         },
