@@ -277,7 +277,7 @@
             "2026-06-09"
           ],
           "recommend_count": 1,
-          "buy_status": "success",
+          "buy_status": "stopped",
           "buy_price": 4.98,
           "daily_prices": [
             {
@@ -1311,7 +1311,7 @@
             "2026-06-02"
           ],
           "recommend_count": 1,
-          "buy_status": "success",
+          "buy_status": "stopped",
           "buy_price": 216.66,
           "daily_prices": [
             {

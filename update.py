@@ -186,6 +186,9 @@ def cmd_update_close():
                     stock['daily_prices'].sort(key=lambda p: p['date'])
 
                 pnl = ((close - stock['buy_price']) / stock['buy_price'] * 100)
+                if pnl <= -20:
+                    stock["buy_status"] = "stopped"
+                    print(f"  🛑 {stock["name"]}({code}): 跌幅{pnl:.1f}%，停止追踪")
                 sign = '+' if pnl >= 0 else ''
                 print(f'  {stock["name"]}({code}): {close}  收益 {sign}{pnl:.2f}%')
                 updated += 1
