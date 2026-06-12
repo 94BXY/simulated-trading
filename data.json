@@ -14,8 +14,13 @@
           ],
           "recommend_count": 1,
           "buy_status": "success",
-          "buy_price": null,
-          "daily_prices": []
+          "buy_price": 91.39,
+          "daily_prices": [
+            {
+              "date": "2026-06-12",
+              "close": 91.87
+            }
+          ]
         },
         {
           "code": "002384",
@@ -46,9 +51,14 @@
             "2026-06-11"
           ],
           "recommend_count": 1,
-          "buy_status": "failed_limit_up",
-          "buy_price": null,
-          "daily_prices": []
+          "buy_status": "success",
+          "buy_price": 58.03,
+          "daily_prices": [
+            {
+              "date": "2026-06-12",
+              "close": 58.03
+            }
+          ]
         },
         {
           "code": "600487",
