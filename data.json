@@ -1,6 +1,61 @@
 {
   "groups": [
     {
+      "id": "group_20260622",
+      "label": "6月22日 第十二组",
+      "date": "2026-06-22",
+      "stocks": [
+        {
+          "code": "301308",
+          "name": "江波龙",
+          "first_recommend_date": "2026-06-22",
+          "recommend_dates": [
+            "2026-06-22"
+          ],
+          "recommend_count": 1,
+          "buy_status": "pending",
+          "buy_price": null,
+          "daily_prices": []
+        },
+        {
+          "code": "300316",
+          "name": "晶盛机电",
+          "first_recommend_date": "2026-06-22",
+          "recommend_dates": [
+            "2026-06-22"
+          ],
+          "recommend_count": 1,
+          "buy_status": "pending",
+          "buy_price": null,
+          "daily_prices": []
+        },
+        {
+          "code": "001309",
+          "name": "德明利",
+          "first_recommend_date": "2026-06-22",
+          "recommend_dates": [
+            "2026-06-22"
+          ],
+          "recommend_count": 1,
+          "buy_status": "pending",
+          "buy_price": null,
+          "daily_prices": []
+        },
+        {
+          "code": "300308",
+          "name": "中际旭创",
+          "first_recommend_date": "2026-06-22",
+          "recommend_dates": [
+            "2026-06-22"
+          ],
+          "recommend_count": 1,
+          "buy_status": "pending",
+          "buy_price": null,
+          "daily_prices": []
+        }
+      ]
+    },
+    {
       "id": "group_20260615",
       "label": "6月15日 第十一组",
       "date": "2026-06-15",
