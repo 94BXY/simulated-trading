@@ -1,0 +1,541 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI量化预测系统</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0f1117; --card: #1a1d27; --card-hover: #22252f; --border: #2a2d3a;
+  --text: #e0e0e0; --text-dim: #8892a4; --green: #00e676; --red: #ff5252;
+  --amber: #ffab00; --blue: #448aff; --purple: #b388ff; --radius: 10px;
+}
+body { font-family: 'SF Mono', 'Consolas', monospace; background: var(--bg); color: var(--text); line-height: 1.6; padding: 20px; max-width: 1400px; margin: 0 auto; }
+h1 { font-size: 28px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+h2 { font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--blue); }
+
+.nav-bar { display: flex; gap: 12px; margin-bottom: 24px; }
+.nav-btn { padding: 10px 20px; background: var(--blue); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+.nav-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.nav-btn.cta { background: var(--green); }
+.nav-btn.back { background: var(--text-dim); }
+
+.card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; }
+.stat-value { font-size: 28px; font-weight: 700; margin: 8px 0; }
+.stat-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+.stat-positive { color: var(--green); }
+.stat-negative { color: var(--red); }
+.stat-amber { color: var(--amber); }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { padding: 12px 16px; text-align: left; color: var(--text-dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: var(--card-hover); }
+
+.badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+.badge-buy { background: rgba(0,230,118,0.15); color: var(--green); }
+.badge-sell { background: rgba(255,82,82,0.15); color: var(--red); }
+.badge-hold { background: rgba(255,171,0,0.15); color: var(--amber); }
+
+.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+.btn-buy { background: var(--green); color: #000; }
+.btn-sell { background: var(--red); color: #fff; }
+.btn:hover { opacity: 0.85; }
+
+.chart-container { position: relative; height: 300px; margin-top: 16px; }
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+
+.empty { text-align: center; padding: 40px; color: var(--text-dim); }
+.update-time { text-align: right; color: var(--text-dim); font-size: 12px; margin-bottom: 16px; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>🤖 AI量化预测系统</h1>
+
+<div class="nav-bar">
+  <a href="index.html" class="nav-btn back">← 返回追踪系统</a>
+  <a href="cta.html" class="nav-btn cta">📊 CTA趋势信号</a>
+</div>
+
+<div class="update-time" id="updateTime"></div>
+
+<!-- 统计卡片 -->
+<div class="stats-grid" id="statsGrid"></div>
+
+<!-- 预测推荐 -->
+<div class="card">
+  <h2>📈 AI预测推荐（Top 10）</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>排名</th>
+        <th>代码</th>
+        <th>名称</th>
+        <th>评分</th>
+        <th>现价</th>
+        <th>信号</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="predictionsTable"></tbody>
+  </table>
+</div>
+
+<!-- 当前持仓 -->
+<div class="card">
+  <h2>💼 当前持仓</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>代码</th>
+        <th>名称</th>
+        <th>持仓</th>
+        <th>成本</th>
+        <th>买入日</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="positionsTable"></tbody>
+  </table>
+</div>
+
+<!-- 净值曲线 -->
+<div class="card">
+  <h2>📊 净值曲线</h2>
+  <div class="chart-container">
+    <canvas id="valueChart"></canvas>
+  </div>
+</div>
+
+<!-- 最近交易 -->
+<div class="card">
+  <h2>📝 最近交易记录</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>日期</th>
+        <th>类型</th>
+        <th>代码</th>
+        <th>名称</th>
+        <th>价格</th>
+        <th>数量</th>
+        <th>盈亏</th>
+      </tr>
+    </thead>
+    <tbody id="tradesTable"></tbody>
+  </table>
+</div>
+
+<script>
+// AI数据
+const AI_DATA = {
+  "updateTime": "2026-06-22 12:14",
+  "summary": {
+    "initial_capital": 100000,
+    "current_value": 100000,
+    "total_return": 0.0,
+    "max_drawdown": 0,
+    "total_trades": 0,
+    "win_rate": 0,
+    "positions_count": 0,
+    "capital": 100000
+  },
+  "positions": [],
+  "predictions": [
+    {
+      "code": "001266.SZ",
+      "name": "001266.SZ",
+      "score": 0.0007774531841278076,
+      "price": 15.346515122026547,
+      "factors": {
+        "mom_5": 0.03440728605234278,
+        "mom_20": 0.02858992390006998,
+        "mom_60": 0.13963616852935723,
+        "vol_5": 0.8826315033614218,
+        "vol_20": 1.2921677284522584,
+        "volume_ratio": 1.1796657457761912,
+        "turnover_avg_5": 3.3660752889763352,
+        "rsi_14": 61.66531337778551,
+        "macd_hist": 0.005168657107625346,
+        "boll_position": 0.6636579777154419,
+        "ma_cross": 1.0,
+        "ma_deviation": 0.014230152886030467
+      }
+    },
+    {
+      "code": "001326.SZ",
+      "name": "001326.SZ",
+      "score": -4.336237907409668e-05,
+      "price": 10.217614448968595,
+      "factors": {
+        "mom_5": -0.045658654547369615,
+        "mom_20": 0.11162841602665874,
+        "mom_60": 0.10070083693855492,
+        "vol_5": 1.822463395119926,
+        "vol_20": 1.8882031036716416,
+        "volume_ratio": 1.0197762860743251,
+        "turnover_avg_5": 2.311947049283651,
+        "rsi_14": 58.55131051926608,
+        "macd_hist": 0.03429858052936641,
+        "boll_position": 0.6225742268023712,
+        "ma_cross": 1.0,
+        "ma_deviation": 0.022577452782521323
+      }
+    },
+    {
+      "code": "603400.SH",
+      "name": "603400.SH",
+      "score": -0.0014523565769195557,
+      "price": 49.02486497171363,
+      "factors": {
+        "mom_5": 0.015950781499675326,
+        "mom_20": 0.0874450639992288,
+        "mom_60": 0.07469679148563158,
+        "vol_5": 1.2642430061523724,
+        "vol_20": 1.43888967114874,
+        "volume_ratio": 0.1833889123653482,
+        "turnover_avg_5": 2.9373499512738612,
+        "rsi_14": 61.188913497839174,
+        "macd_hist": 0.10728800217362544,
+        "boll_position": 0.8531921867887773,
+        "ma_cross": 1.0,
+        "ma_deviation": 0.03837881795785969
+      }
+    },
+    {
+      "code": "001332.SZ",
+      "name": "001332.SZ",
+      "score": -0.001522451639175415,
+      "price": 16.72065901982369,
+      "factors": {
+        "mom_5": 0.008591898190173364,
+        "mom_20": 0.038553491184548205,
+        "mom_60": -0.014621509154567947,
+        "vol_5": 1.5035239173485564,
+        "vol_20": 2.430156298056899,
+        "volume_ratio": 0.3392113684795384,
+        "turnover_avg_5": 1.5345444250685174,
+        "rsi_14": 64.94391234231445,
+        "macd_hist": 0.09024299822361172,
+        "boll_position": 0.7849533450757611,
+        "ma_cross": 1.0,
+        "ma_deviation": 0.027026963272838822
+      }
+    },
+    {
+      "code": "001311.SZ",
+      "name": "001311.SZ",
+      "score": -0.002278238534927368,
+      "price": 34.053483540313074,
+      "factors": {
+        "mom_5": 0.03586066261675103,
+        "mom_20": 0.025285796858675047,
+        "mom_60": -0.00015484268805321388,
+        "vol_5": 1.2641217784640586,
+        "vol_20": 1.641716039515221,
+        "volume_ratio": 1.0780464852376503,
+        "turnover_avg_5": 2.3986477869408858,
+        "rsi_14": 61.113005376147996,
+        "macd_hist": 0.1784806221131899,
+        "boll_position": 0.636409271925894,
+        "ma_cross": 1.0,
+        "ma_deviation": 0.014004459301306449
+      }
+    },
+    {
+      "code": "001259.SZ",
+      "name": "001259.SZ",
+      "score": -0.002466142177581787,
+      "price": 14.280912193385992,
+      "factors": {
+        "mom_5": 0.001295016619477174,
+        "mom_20": -0.09842314379664385,
+        "mom_60": -0.09370037128493336,
+        "vol_5": 1.8975666227437569,
+        "vol_20": 1.6519287254388422,
+        "volume_ratio": 0.28907953753918847,
+        "turnover_avg_5": 2.2678149812949164,
+        "rsi_14": 27.26048624242209,
+        "macd_hist": -0.056563838346541606,
+        "boll_position": 0.28552420303652337,
+        "ma_cross": 0.0,
+        "ma_deviation": -0.03609854339833862
+      }
+    },
+    {
+      "code": "603257.SH",
+      "name": "603257.SH",
+      "score": -0.003208339214324951,
+      "price": 22.559827203528307,
+      "factors": {
+        "mom_5": 0.06003327209442588,
+        "mom_20": 0.050729065273761975,
+        "mom_60": 0.11884794999788961,
+        "vol_5": 1.9559197535734656,
+        "vol_20": 1.9525602719493929,
+        "volume_ratio": 0.3711411965732188,
+        "turnover_avg_5": 3.1025172125610907,
+        "rsi_14": 68.67691850681172,
+        "macd_hist": 0.07569681214029758,
+        "boll_position": 1.0372262615672028,
+        "ma_cross": 1.0,
+        "ma_deviation": 0.03881536144928033
+      }
+    },
+    {
+      "code": "603175.SH",
+      "name": "603175.SH",
+      "score": -0.0034019947052001953,
+      "price": 25.65860779373932,
+      "factors": {
+        "mom_5": 0.02192510304173312,
+        "mom_20": -0.007541860566980585,
+        "mom_60": 0.04812282052722461,
+        "vol_5": 1.3635074546669375,
+        "vol_20": 1.5498145420506144,
+        "volume_ratio": 0.3669447057001208,
+        "turnover_avg_5": 2.394987057218422,
+        "rsi_14": 43.72422159785563,
+        "macd_hist": 0.04919377496060845,
+        "boll_position": 0.6340387573888129,
+        "ma_cross": 1.0,
+        "ma_deviation": 0.011173003027092454
+      }
+    },
+    {
+      "code": "603271.SH",
+      "name": "603271.SH",
+      "score": -0.0034614503383636475,
+      "price": 39.4892915979924,
+      "factors": {
+        "mom_5": -0.004733146736948468,
+        "mom_20": 0.08285433083175686,
+        "mom_60": 0.03669710625353306,
+        "vol_5": 1.373631311608242,
+        "vol_20": 1.9567713599191219,
+        "volume_ratio": 0.4120186812637237,
+        "turnover_avg_5": 1.980948450043842,
+        "rsi_14": 73.11490831726167,
+        "macd_hist": 0.2138895744460233,
+        "boll_position": 0.6922080490342932,
+        "ma_cross": 1.0,
+        "ma_deviation": 0.03735319606071208
+      }
+    },
+    {
+      "code": "603248.SH",
+      "name": "603248.SH",
+      "score": -0.003535255789756775,
+      "price": 52.18688850572735,
+      "factors": {
+        "mom_5": -0.0024925709758043535,
+        "mom_20": -0.029825118260252692,
+        "mom_60": 0.09248155442272021,
+        "vol_5": 2.4792415836220023,
+        "vol_20": 1.569093406898474,
+        "volume_ratio": 0.3589270679320728,
+        "turnover_avg_5": 2.3230490594453315,
+        "rsi_14": 34.85100806807188,
+        "macd_hist": -0.27463647985251505,
+        "boll_position": 0.225916690953751,
+        "ma_cross": 0.0,
+        "ma_deviation": -0.023877106732768993
+      }
+    }
+  ],
+  "trades": [],
+  "dailyValues": [
+    {
+      "date": "2026-06-22",
+      "value": 100000,
+      "capital": 100000,
+      "positions_count": 0
+    }
+  ]
+};
+
+// 更新时间
+document.getElementById('updateTime').textContent = '更新时间: ' + AI_DATA.updateTime;
+
+// 统计卡片
+function renderStats() {
+  const s = AI_DATA.summary;
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">总资产</div>
+      <div class="stat-value">¥${s.current_value.toLocaleString()}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">总收益</div>
+      <div class="stat-value ${s.total_return >= 0 ? 'stat-positive' : 'stat-negative'}">${s.total_return >= 0 ? '+' : ''}${s.total_return.toFixed(2)}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">胜率</div>
+      <div class="stat-value stat-amber">${s.win_rate.toFixed(1)}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">持仓数</div>
+      <div class="stat-value">${s.positions_count}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">可用资金</div>
+      <div class="stat-value">¥${s.capital.toLocaleString()}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">最大回撤</div>
+      <div class="stat-value stat-negative">${s.max_drawdown.toFixed(2)}%</div>
+    </div>
+  `;
+}
+
+// 预测表格
+function renderPredictions() {
+  const tbody = document.getElementById('predictionsTable');
+  if (AI_DATA.predictions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">暂无预测数据，请先运行训练和预测</td></tr>';
+    return;
+  }
+  tbody.innerHTML = AI_DATA.predictions.map((p, i) => {
+    const signal = p.score > 0.02 ? 'BUY' : (p.score < -0.02 ? 'SELL' : 'HOLD');
+    const signalClass = signal === 'BUY' ? 'badge-buy' : (signal === 'SELL' ? 'badge-sell' : 'badge-hold');
+    return `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${p.code}</td>
+        <td>${p.name}</td>
+        <td>${p.score.toFixed(4)}</td>
+        <td>¥${p.price.toFixed(2)}</td>
+        <td><span class="badge ${signalClass}">${signal}</span></td>
+        <td><button class="btn btn-buy" onclick="handleBuy('${p.code}', '${p.name}', ${p.price})">买入</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// 持仓表格
+function renderPositions() {
+  const tbody = document.getElementById('positionsTable');
+  if (AI_DATA.positions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">暂无持仓</td></tr>';
+    return;
+  }
+  const today = new Date().toISOString().split('T')[0];
+  tbody.innerHTML = AI_DATA.positions.map(p => {
+    const canSell = p.buy_date < today;
+    const status = canSell ? '<span class="badge badge-sell">可卖</span>' : '<span class="badge badge-hold">T+1</span>';
+    return `
+      <tr>
+        <td>${p.code}</td>
+        <td>${p.name}</td>
+        <td>${p.qty}股</td>
+        <td>¥${p.buy_price.toFixed(2)}</td>
+        <td>${p.buy_date}</td>
+        <td>${status}</td>
+        <td>${canSell ? `<button class="btn btn-sell" onclick="handleSell('${p.code}')">卖出</button>` : ''}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// 交易记录
+function renderTrades() {
+  const tbody = document.getElementById('tradesTable');
+  if (AI_DATA.trades.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">暂无交易记录</td></tr>';
+    return;
+  }
+  tbody.innerHTML = AI_DATA.trades.slice().reverse().map(t => {
+    const profit = t.profit !== undefined ? `<span class="${t.profit >= 0 ? 'positive' : 'negative'}">${t.profit >= 0 ? '+' : ''}${t.profit.toFixed(2)}</span>` : '-';
+    return `
+      <tr>
+        <td>${t.date}</td>
+        <td><span class="badge ${t.type === 'BUY' ? 'badge-buy' : 'badge-sell'}">${t.type}</span></td>
+        <td>${t.code}</td>
+        <td>${t.name}</td>
+        <td>¥${t.price.toFixed(2)}</td>
+        <td>${t.qty}股</td>
+        <td>${profit}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// 净值曲线
+function renderChart() {
+  const ctx = document.getElementById('valueChart').getContext('2d');
+  const data = AI_DATA.dailyValues;
+  
+  if (data.length === 0) {
+    ctx.fillStyle = '#8892a4';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('暂无数据', ctx.canvas.width / 2, ctx.canvas.height / 2);
+    return;
+  }
+  
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.date),
+      datasets: [{
+        label: '总资产',
+        data: data.map(d => d.value),
+        borderColor: '#448aff',
+        backgroundColor: 'rgba(68,138,255,0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+      },
+      scales: {
+        x: { 
+          grid: { color: '#2a2d3a' },
+          ticks: { color: '#8892a4', maxTicksLimit: 10 }
+        },
+        y: { 
+          grid: { color: '#2a2d3a' },
+          ticks: { color: '#8892a4', callback: v => '¥' + v.toLocaleString() }
+        }
+      }
+    }
+  });
+}
+
+// 买入操作
+function handleBuy(code, name, price) {
+  alert(`买入 ${name}(${code}) @ ¥${price.toFixed(2)}\n\n请运行命令:\npython ai_quant/update_ai.py --buy`);
+}
+
+// 卖出操作
+function handleSell(code) {
+  alert(`卖出 ${code}\n\n请运行命令:\npython ai_quant/update_ai.py --sell ${code}`);
+}
+
+// 初始化
+renderStats();
+renderPredictions();
+renderPositions();
+renderTrades();
+renderChart();
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "initial_capital": 100000,
+  "capital": 100000,
+  "positions": {},
+  "trades": [],
+  "daily_values": [
+    {
+      "date": "2026-06-22",
+      "value": 100000,
+      "capital": 100000,
+      "positions_count": 0
+    }
+  ],
+  "summary": {
+    "initial_capital": 100000,
+    "current_value": 100000,
+    "total_return": 0.0,
+    "max_drawdown": 0,
+    "total_trades": 0,
+    "win_rate": 0,
+    "positions_count": 0,
+    "capital": 100000
+  }
+}
