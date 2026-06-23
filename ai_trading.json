@@ -1,24 +1,191 @@
 {
-  "initial_capital": 100000,
-  "capital": 100000,
-  "positions": {},
-  "trades": [],
-  "daily_values": [
-    {
-      "date": "2026-06-22",
-      "value": 100000,
-      "capital": 100000,
-      "positions_count": 0
-    }
-  ],
-  "summary": {
+  "backtester": {
     "initial_capital": 100000,
-    "current_value": 100000,
-    "total_return": 0.0,
-    "max_drawdown": 0,
-    "total_trades": 0,
-    "win_rate": 0,
-    "positions_count": 0,
-    "capital": 100000
-  }
+    "capital": 37811.33743163745,
+    "positions": {
+      "002123.SZ": {
+        "qty": 1100,
+        "buy_price": 8.522116805607618,
+        "buy_date": "2026-06-22",
+        "name": "梦网科技"
+      },
+      "003019.SZ": {
+        "qty": 600,
+        "buy_price": 14.12897801407412,
+        "buy_date": "2026-06-22",
+        "name": "宸展光电"
+      },
+      "603777.SH": {
+        "qty": 200,
+        "buy_price": 39.67203034979528,
+        "buy_date": "2026-06-22",
+        "name": "来伊份"
+      },
+      "002940.SZ": {
+        "qty": 500,
+        "buy_price": 13.00576490272629,
+        "buy_date": "2026-06-22",
+        "name": "昂利康"
+      },
+      "002530.SZ": {
+        "qty": 1000,
+        "buy_price": 6.3937351325754195,
+        "buy_date": "2026-06-22",
+        "name": "金财互联"
+      },
+      "002351.SZ": {
+        "qty": 1000,
+        "buy_price": 5.613060967710443,
+        "buy_date": "2026-06-22",
+        "name": "漫步者"
+      },
+      "002300.SZ": {
+        "qty": 700,
+        "buy_price": 7.145373810899205,
+        "buy_date": "2026-06-22",
+        "name": "太阳电缆"
+      },
+      "000411.SZ": {
+        "qty": 300,
+        "buy_price": 16.50243549216021,
+        "buy_date": "2026-06-22",
+        "name": "英特集团"
+      },
+      "002560.SZ": {
+        "qty": 500,
+        "buy_price": 8.770572092111184,
+        "buy_date": "2026-06-22",
+        "name": "通达股份"
+      },
+      "002382.SZ": {
+        "qty": 300,
+        "buy_price": 11.850280969361823,
+        "buy_date": "2026-06-22",
+        "name": "蓝帆医疗"
+      }
+    },
+    "trades": [
+      {
+        "code": "002123.SZ",
+        "name": "梦网科技",
+        "action": "BUY",
+        "price": 8.522116805607618,
+        "qty": 1100,
+        "amount": 9374.32848616838,
+        "date": "2026-06-22",
+        "capital_after": 90625.67151383162
+      },
+      {
+        "code": "003019.SZ",
+        "name": "宸展光电",
+        "action": "BUY",
+        "price": 14.12897801407412,
+        "qty": 600,
+        "amount": 8477.386808444471,
+        "date": "2026-06-22",
+        "capital_after": 82148.28470538715
+      },
+      {
+        "code": "603777.SH",
+        "name": "来伊份",
+        "action": "BUY",
+        "price": 39.67203034979528,
+        "qty": 200,
+        "amount": 7934.4060699590555,
+        "date": "2026-06-22",
+        "capital_after": 74213.87863542809
+      },
+      {
+        "code": "002940.SZ",
+        "name": "昂利康",
+        "action": "BUY",
+        "price": 13.00576490272629,
+        "qty": 500,
+        "amount": 6502.882451363144,
+        "date": "2026-06-22",
+        "capital_after": 67710.99618406495
+      },
+      {
+        "code": "002530.SZ",
+        "name": "金财互联",
+        "action": "BUY",
+        "price": 6.3937351325754195,
+        "qty": 1000,
+        "amount": 6393.73513257542,
+        "date": "2026-06-22",
+        "capital_after": 61317.26105148953
+      },
+      {
+        "code": "002351.SZ",
+        "name": "漫步者",
+        "action": "BUY",
+        "price": 5.613060967710443,
+        "qty": 1000,
+        "amount": 5613.060967710443,
+        "date": "2026-06-22",
+        "capital_after": 55704.200083779084
+      },
+      {
+        "code": "002300.SZ",
+        "name": "太阳电缆",
+        "action": "BUY",
+        "price": 7.145373810899205,
+        "qty": 700,
+        "amount": 5001.761667629444,
+        "date": "2026-06-22",
+        "capital_after": 50702.43841614964
+      },
+      {
+        "code": "000411.SZ",
+        "name": "英特集团",
+        "action": "BUY",
+        "price": 16.50243549216021,
+        "qty": 300,
+        "amount": 4950.730647648063,
+        "date": "2026-06-22",
+        "capital_after": 45751.70776850158
+      },
+      {
+        "code": "002560.SZ",
+        "name": "通达股份",
+        "action": "BUY",
+        "price": 8.770572092111184,
+        "qty": 500,
+        "amount": 4385.286046055592,
+        "date": "2026-06-22",
+        "capital_after": 41366.42172244599
+      },
+      {
+        "code": "002382.SZ",
+        "name": "蓝帆医疗",
+        "action": "BUY",
+        "price": 11.850280969361823,
+        "qty": 300,
+        "amount": 3555.084290808547,
+        "date": "2026-06-22",
+        "capital_after": 37811.33743163745
+      }
+    ],
+    "daily_values": [
+      {
+        "date": "2026-06-22",
+        "total": 100000.0,
+        "capital": 37811.33743163745,
+        "position": 62188.66256836255,
+        "return_pct": 0
+      }
+    ],
+    "performance": {
+      "total_return": 0.0,
+      "annual_return": 0.0,
+      "sharpe_ratio": 0,
+      "max_drawdown": 0,
+      "win_rate": 0,
+      "total_trades": 10,
+      "current_positions": 10
+    }
+  },
+  "scaler_mean": null,
+  "scaler_scale": null,
+  "last_update": "2026-06-22 14:31:08.641872"
 }

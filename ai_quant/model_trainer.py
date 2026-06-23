@@ -88,6 +88,10 @@ class ModelTrainer:
     def load_model(self):
         """加载模型"""
         if os.path.exists(self.model_path):
-            self.model.load_state_dict(torch.load(self.model_path, weights_only=True))
+            # PyTorch 2.6+ 需要 weights_only=False 或添加安全全局变量
+            try:
+                self.model.load_state_dict(torch.load(self.model_path, weights_only=True))
+            except Exception:
+                self.model.load_state_dict(torch.load(self.model_path, weights_only=False))
             self.model.eval()
             print(f"  Model loaded from {self.model_path}")

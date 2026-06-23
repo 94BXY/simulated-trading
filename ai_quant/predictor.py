@@ -20,6 +20,17 @@ from .factor_engine import FactorEngine
 from .model_trainer import ModelTrainer
 from .backtester import Backtester
 
+class NumpyEncoder(json.JSONEncoder):
+    """处理numpy类型的JSON编码器"""
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super().default(obj)
+
 class AIPredictor:
     """AI选股预测器"""
     
@@ -137,9 +148,9 @@ class AIPredictor:
                 all_data.append({
                     'code': code,
                     'name': name,
-                    'close': latest['close'],
-                    'pct_chg': latest.get('pct_chg', 0),
-                    'factors': factor_values,
+                    'close': float(latest['close']),
+                    'pct_chg': float(latest.get('pct_chg', 0)),
+                    'factors': [float(v) for v in factor_values],
                     'latest_date': str(latest['date'].date()) if hasattr(latest['date'], 'date') else str(latest['date'])
                 })
                 
@@ -303,20 +314,22 @@ class AIPredictor:
             'date': str(date),
             'market_summary': {
                 'total_stocks_analyzed': len(predictions),
-                'top_picks': [{'code': p['code'], 'name': p['name'], 'score': p['score']} 
+                'top_picks': [{'code': p['code'], 'name': p['name'], 'score': float(p['score'])} 
                              for p in predictions[:5]],
-                'bottom_picks': [{'code': p['code'], 'name': p['name'], 'score': p['score']} 
+                'bottom_picks': [{'code': p['code'], 'name': p['name'], 'score': float(p['score'])} 
                                 for p in predictions[-5:]]
             },
             'trades': trade_results,
             'portfolio': {
-                'capital': self.backtester.capital,
-                'positions': self.backtester.positions,
-                'total_value': self.backtester.get_total_value(
+                'capital': float(self.backtester.capital),
+                'positions': {k: {**v, 'qty': int(v['qty']), 'buy_price': float(v['buy_price'])} 
+                             for k, v in self.backtester.positions.items()},
+                'total_value': float(self.backtester.get_total_value(
                     {p['code']: p['close'] for p in predictions}
-                )
+                ))
             },
-            'performance': performance,
+            'performance': {k: float(v) if isinstance(v, (int, float, np.integer, np.floating)) else v 
+                           for k, v in performance.items()},
             'lessons': self._generate_lessons(predictions, trade_results, performance)
         }
         
@@ -334,9 +347,7 @@ class AIPredictor:
             lessons.append(f"今日买入 {len(buys)} 只股票，关注后续表现")
         
         if sells:
-            profits = [t['stock'].get('profit', 0) for t in sells]
-            avg_profit = np.mean(profits) if profits else 0
-            lessons.append(f"今日卖出 {len(sells)} 只，平均收益 {avg_profit:.2f}%")
+            lessons.append(f"今日卖出 {len(sells)} 只")
         
         # 绩效分析
         if performance.get('max_drawdown', 0) > 10:
@@ -357,7 +368,7 @@ class AIPredictor:
         }
         
         with open(self.ai_data_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+            json.dump(data, f, ensure_ascii=False, indent=2, cls=NumpyEncoder)
         
         print(f"  数据已保存到 {self.ai_data_path}")
     
